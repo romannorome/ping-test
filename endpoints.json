@@ -1,0 +1,10 @@
+{
+    "Africa" : ["safaricom.co.ke", "news24.com", "unilag.edu.ng"],
+    "Asia" : ["ntt.com", "baidu.com", "softbank.jp"],
+    "Core Infrastructure" : ["8.8.8.8", "1.1.1.1", "9.9.9.9"],
+    "Europe" : ["bbb.co.uk", "proof.ovh.net", "t-online.de"],
+    "Middle East" : ["etisalat.ae", "aljazeera.net", "gulfair.com"],
+    "North America" : ["google.com", "amazon.com", "a248.e.akamai.net"],
+    "Oceania" : ["abc.net.au", "australia.gov.au", "sydney.edu.au"],
+    "South America" : ["uol.com.br", "globo.com", "nic.cl"]
+}
