@@ -6,6 +6,9 @@ import os
 
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENDPOINTS_FILE = os.path.join(BASE_DIR, "endpoints.json")
+
 class PingRequest(BaseModel):
     target: str
     count: int = 5
@@ -13,8 +16,19 @@ class PingRequest(BaseModel):
     interval: float = 0.2
     size: int = 32
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENDPOINTS_FILE = os.path.join(BASE_DIR, "endpoints.json")
+class MultiTargetPingRequest(BaseModel):
+    targets: list[str]
+    count: int = 5
+    timeout: int = 1
+    interval: float = 0.2
+    size: int = 32
+
+class MultiRegionPingRequest(BaseModel):
+    regions: list[str]
+    count: int = 5
+    timeout: int = 1
+    interval: float = 0.2
+    size: int = 32
 
 def load_endpoints():
     with open(ENDPOINTS_FILE) as f:
@@ -43,11 +57,47 @@ def ping_target(target: str, count: int, timeout: int, interval: float, size: in
             "packet loss": "100.0%",
             "success": False
         }
+        
+@app.post("/ping/targets")
+def ping_multiple_targets(request : MultiTargetPingRequest):
+    results = []
+
+    for target in request.targets:
+        result = ping_target(target, request.count, request.timeout, request.interval, request.size)
+        results.append(result)
+
+    return results
+
+@app.post("/ping/regions")
+def ping_multiple_regions(request: MultiRegionPingRequest):
+    data = load_endpoints()
+    results = {}
+
+    for region in request.regions:
+        if region not in data:
+            raise HTTPException(status_code=404, detail=f"Region '{region}' not found")
+
+        region_results = []
+        for target in data[region]:
+            try:
+                result = ping_target(target, request.count, request.timeout, request.interval, request.size)
+            except Exception as e:
+                result = {
+                    "target": target,
+                    "success": False,
+                    "error": str(e)
+                }
+            region_results.append(result)
+        
+        results[region] = region_results
+
+    return results
 
 @app.post("/ping/{target}")
 def ping_target_endpoint(target: str):
     result = ping_target(target, 5, 1, 0.2, 32)
     return result
+
 
 @app.get("/ping")
 def ping_endpoints():
@@ -62,3 +112,4 @@ def ping_endpoints():
         results[region] = region_results
 
     return results
+

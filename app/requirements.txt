@@ -1,0 +1,3 @@
+pythonping
+fastapi
+uvicorn
